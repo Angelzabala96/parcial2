@@ -6,7 +6,7 @@
 - Angel Zabala
 
 ## Proyecto: Montacargas.
-![Tinkercad](./img/MontacargaArduino.png)
+![Tinkercad](./img/DetectorDeIncendiosArduino.png)
 
 ## Descripcion
 
