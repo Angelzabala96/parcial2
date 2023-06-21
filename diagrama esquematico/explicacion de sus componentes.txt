@@ -1,0 +1,9 @@
+R1: resistencia que va conectada al display lcd para que encienda la luz
+R2: resistencia que va conectada al led verde conectado al pin 3
+R3: resistencia que va conectada al led rojo conectado al pin 4
+SERVO1: servomotor conectado al pin pmw 9
+U2: sensor de temperatura conectado al pin A0 analogico para poder leer la temperatura
+U3: display lcd conectado a los pin analogicos A1, A2, A3, A4, A5 y al pin digital 2
+U6: sensor infrarrojo conectado al pin 11 para recibir la señal del control remoto IR
+D1: led rojo conectado al pin 4
+D2: led verde conectado al pin 3

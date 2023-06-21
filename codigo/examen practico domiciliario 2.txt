@@ -1,0 +1,184 @@
+/*
+
+---------------EXAMEN PRACTICO DOMICILIARIO 2------------------------
+El objetivo de este proyecto es diseñar un sistema de incendio utilizando Arduino que pueda
+detectar cambios de temperatura y activar un servo motor en caso de detectar un incendio.
+Además, se mostrará la temperatura actual y la estación del año en un display LCD.
+----------------------------------------------------------------------
+
+
+*/
+
+// Angel Zabala
+// 1D examen practico domiciliario 2
+
+#include <LiquidCrystal.h>
+#include <Servo.h>
+#include <IRremote.h>
+
+
+#define encender 0xFF00BF00
+#define apagar 0xFD02BF00
+#define IR 11
+#define rojo 4
+#define verde 3
+Servo myServo;
+LiquidCrystal lcd(2, A1, A2, A3, A4, A5);
+
+int designarEstacion(int rango, int min, int max, int invierno, int otonio, int primavera, int verano);
+void imprimirEstacion(int estacion);
+int leerYconvertirTemp(int lectura);
+void encendidoYapagado(int numeroUno, int numeroDos);
+
+int temperatura;
+int lectura;
+int estacion;
+int boton = 0;
+int parametro;
+  
+void setup()
+{
+  myServo.attach(9, 500, 2500);
+  lcd.begin(16,2);
+  IrReceiver.begin(IR, DISABLE_LED_FEEDBACK);
+  Serial.begin(9600);
+  myServo.write(0);
+  pinMode(13, OUTPUT);
+  pinMode(rojo, OUTPUT);
+  pinMode(verde, OUTPUT);
+  lcd.print("sistema OFF");
+}
+
+void loop()
+{
+  
+  encendidoYapagado(1,0);
+  temperatura = leerYconvertirTemp(lectura);
+  estacion = designarEstacion(temperatura, 0, 60, 10, 20, 30, 40);
+  imprimirEstacion(estacion);
+}
+
+
+void encendidoYapagado(int numeroUno, int numeroDos)
+{
+  
+   if (IrReceiver.decode()) 
+   {
+    if (IrReceiver.decodedIRData.decodedRawData == apagar)
+    {
+         boton = numeroDos;
+         lcd.clear();
+         lcd.print("sistema OFF");
+      digitalWrite(verde, LOW);
+      
+   	 }
+     IrReceiver.resume();
+    }
+  
+  
+  
+  while(boton == numeroDos)
+ {
+ if (IrReceiver.decode()) 
+  {
+   if (IrReceiver.decodedIRData.decodedRawData == encender)
+    {
+     lcd.clear();
+      lcd.print("sistema ON");
+     digitalWrite(verde, HIGH);
+      boton = numeroUno;
+     
+    }
+   IrReceiver.resume();
+ }
+}
+    delay(500); 
+}
+
+
+int leerYconvertirTemp(int lectura)
+{
+  int retorno;
+  
+   lectura = analogRead(A0);
+   retorno = (lectura * (500.0 / 1023.0) ) - 50.0;
+  
+  return retorno;
+}
+
+
+int designarEstacion(int rango, int min, int max, int invierno, int otonio, int primavera, int verano)
+{
+  int retorno = 0;
+   lcd.clear();
+  lcd.print(rango);
+  lcd.print(" C");
+  if(rango >= min && rango < max)
+        {
+          if(rango <= invierno)
+          {
+            retorno = 1;
+          }
+          else if(rango <= otonio)
+          {
+            retorno = 2;
+          }
+          else if(rango <= primavera)
+          {
+            retorno = 3;
+          }
+          else if(rango <= verano)
+          {
+            retorno = 4;
+          }
+		}
+  else if(rango >= max)
+  {
+    retorno = -1;
+    lcd.clear();
+    lcd.print("incendio!!!!!");
+    for(int i = 0; i < 180; i++)
+    {
+      myServo.write(i);
+      i = i + 9;
+      digitalWrite(rojo, HIGH);
+      lcd.display();
+      
+      delay(50);
+      digitalWrite(rojo, LOW);
+      lcd.noDisplay();
+      delay(50);
+      
+    }
+    lcd.display();
+    lcd.clear();
+    myServo.write(0);
+  }
+  
+  return retorno;
+}
+void imprimirEstacion(int estacion)
+{
+  lcd.setCursor(0,2); 
+  switch(estacion)
+        {
+          case 1:
+          lcd.print("Invierno");
+          break;
+          case 2:
+          lcd.print("Otonio");
+          break;
+          case 3:
+          lcd.print("Primavera");
+          break;
+          case 4:
+          lcd.print("Verano");
+          break;
+          case 0:
+          lcd.print("Algo anda mal");
+          break;
+   		  default:
+    	  break;
+        }
+    delay(500);
+}
