@@ -10,40 +10,67 @@
 
 ## Descripcion
 
-Se nos pide armar un modelo de montacarga funcional como maqueta para un hospital. El
-objetivo es que implementes un sistema que pueda recibir ordenes de subir, bajar o pausar
-desde diferentes pisos y muestre el estado actual del montacargas en el display 7
-segmentos.
+El objetivo de este proyecto es diseñar un sistema de incendio utilizando Arduino que pueda
+detectar cambios de temperatura y activar un servo motor en caso de detectar un incendio.
+Además, se mostrará la temperatura actual y la estación del año en un display LCD.
+
 
 ## Funcion principal
 
-Esta funcion se encarga de identificar que pulsador fue tocado para asi llevar a cabo el ascenso, descenso o la pausa del montacargas
-
-estado_uno, estado_dos, y estado_tres son los tres pulsadores que al ser seleccionados dan lugar a las distintas acciones del mecanismo
+Esta funcion nos permite saber que estacion del año es, y en el caso que no sea ninguna estacion nos lo notifica, al superar los valores que se identifican como temperatura sin riesgo se inicia el protocolo de riesgo de incendio
 
 ~~~ C
-void estados(int estado_uno, int estado_dos, int estado_tres)
+int designarEstacion(int rango, int min, int max, int invierno, int otonio, int primavera, int verano)
 {
-  if(estado_uno == LOW)
+  int retorno = 0;
+   lcd.clear();
+  lcd.print(rango);
+  lcd.print(" C");
+  if(rango >= min && rango < max)
+        {
+          if(rango <= invierno)
+          {
+            retorno = 1;
+          }
+          else if(rango <= otonio)
+          {
+            retorno = 2;
+          }
+          else if(rango <= primavera)
+          {
+            retorno = 3;
+          }
+          else if(rango <= verano)
+          {
+            retorno = 4;
+          }
+		}
+  else if(rango >= max)
   {
-   prenderApagar(verde, rojo);
-   piso = subirM(piso); 
+    retorno = -1;
+    lcd.clear();
+    lcd.print("incendio!!!!!");
+    for(int i = 0; i < 180; i++)
+    {
+      myServo.write(i);
+      i = i + 9;
+      digitalWrite(rojo, HIGH);
+      lcd.display();
+      
+      delay(50);
+      digitalWrite(rojo, LOW);
+      lcd.noDisplay();
+      delay(50);
+      
+    }
+    lcd.display();
+    lcd.clear();
+    myServo.write(0);
   }
   
-  if(estado_dos == LOW)
-  { 
-    prenderApagar(verde, rojo);
-    piso = bajarM(piso); 
-  }
-  
-  if(estado_tres == HIGH)
-  {
-    prenderApagar(rojo, verde);
-    Serial.println("montacargas pausado");
-    estadoPausa = 0;
-  }
-  
+  return retorno;
+}
   ~~~
   
   ## 🤖 link al proyecto
-  - [proyecto](https://www.tinkercad.com/things/25jh8Ax4xvM)
+  - [proyecto](https://www.tinkercad.com/things/3Ez6lYRTPvp)
